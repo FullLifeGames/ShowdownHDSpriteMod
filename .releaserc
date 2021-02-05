@@ -1,0 +1,22 @@
+{
+  "plugins": [
+    ["@semantic-release/commit-analyzer", {
+      "preset": "eslint"
+    }],
+    ["@semantic-release/release-notes-generator", {
+      "preset": "eslint",
+    }],
+    ["@semantic-release/github", {
+      "preset": "eslint",
+      "assets": [
+        {"path": "dist/lib/battlehelper.js", "label": "BattleHelper"},
+        {"path": "dist/lib/battlehelper.js.map", "label": "BattleHelper Map"},
+      ]
+    }],
+    ["@semantic-release/git", {
+      "preset": "eslint",
+      "assets": ["package.json"],
+      "message": "Chore: ${nextRelease.version}\n\n${nextRelease.notes}"
+    }]
+  ]
+}
