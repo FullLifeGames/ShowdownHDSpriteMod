@@ -17,246 +17,107 @@
 // ==/UserScript==
 
 (function () {
-  let lastOwnPokemon: string;
-  let lastOppPokemon: string;
-  let lastWeatherStatus: string | null;
-  let lastTerrainStatus: string | null;
 
-  const weatherMapping = {
-    sunnyday: 'Sun',
-    raindance: 'Rain',
-    sandstorm: 'Sand',
-    hail: 'Hail',
-    harshsunshine: 'Harsh Sunshine',
-    heavyrain: 'Heavy Rain',
-    strongwinds: 'Strong Winds',
-  };
+  const corsAnyWhereImpl = "https://cors-anywhere-hd.herokuapp.com/";
 
-  const terrainMapping = {
-    grassyterrain: 'Grassy',
-    psychicterrain: 'Psychic',
-    electricterrain: 'Electric',
-    mistyterrain: 'Misty',
-  };
+  const currentQueriedList = new Map<string, { querying: boolean }>();
+  
+  const resultList = new Map<string, { exists: boolean }>();
 
-  let running = false;
+  const hdImagePaths = [
+    "https://www.pkparaiso.com/imagenes/espada_escudo/sprites/animados-gigante/",
+    "https://www.pkparaiso.com/imagenes/ultra_sol_ultra_luna/sprites/animados-sinbordes-gigante/",
+    // TODO: Find alternative HD image hosters (e.g. the FurretTurret Sprites)
+  ];
 
-  let runningHandlerId: string;
-
-  let currentId: string;
-  let currentClickedBattleOptions: HTMLElement;
-
-  let currentTier: string;
-
-  function currentIdExists() {
-    return $('#' + currentId).length > 0;
-  }
-
-  function getActiveWeatherStats(
-    psRoom: JQuery<HTMLElement>,
-    weather: Array<string>
-  ): string | null {
-    for (let index = 0; index < weather.length; index++) {
-      const element = weather[index];
-      if (psRoom.find('.' + element + 'weather').length > 0) {
-        return element;
-      }
-    }
-    return null;
-  }
-
-  function getActivePokemon(littleImages: JQuery<HTMLElement>): string | null {
-    let activePokemon = null as string | null;
-    littleImages.each(function () {
-      const label = $(this).attr('aria-label') as string;
-      if (label.indexOf('(active)') !== -1) {
-        activePokemon = label.replace(' (active)', '');
-        if (activePokemon.indexOf('(') !== -1) {
-          activePokemon = activePokemon.substr(activePokemon.indexOf('(') + 1);
-          activePokemon = activePokemon.substr(0, activePokemon.indexOf(')'));
+  function makeRequest(method: string, url: string): Promise<XMLHttpRequest> | null {
+    if (currentQueriedList.get(url)?.querying) return null;
+    return new Promise(function (resolve, reject) {
+      currentQueriedList.set(url, { querying: true });
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, url);
+      xhr.onload = function () {
+        currentQueriedList.delete(url);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(xhr);
+        } else {
+          reject(xhr);
         }
-      }
+      };
+      xhr.onerror = function () {
+        currentQueriedList.delete(url);
+        reject(xhr);
+      };
+      xhr.send();
     });
-    return activePokemon;
   }
 
-  function handleDamageCalcs() {
-    // Cycle stop conditions
-    if (!running) {
-      return;
+  async function urlExists(url: string) {
+    const corsFreeUrl = corsAnyWhereImpl + url;
+    const response = await makeRequest('HEAD', 
+      url.indexOf('file:///') === -1 ? corsFreeUrl : url
+    );
+    if (response === null) {
+       return null;
     }
+    return response.status !== 404;
+  }
 
-    if (runningHandlerId !== currentId) {
-      runningHandlerId = currentId;
-      return;
-    }
-    if (!currentIdExists()) {
-      return;
-    }
-    runningHandlerId = currentId;
-
-    const psRoom = $(currentClickedBattleOptions).closest('.ps-room');
-
-    const currentWeatherStatus = getActiveWeatherStats(psRoom, Object.keys(weatherMapping));
-    const currentTerrainStatus = getActiveWeatherStats(psRoom, Object.keys(terrainMapping));
-
-    const currentOwnPokemon = getActivePokemon($(psRoom.find('.leftbar .picon.has-tooltip')));
-    if (currentOwnPokemon !== null) {
-      const currentOppPokemon = getActivePokemon($(psRoom.find('.rightbar .picon.has-tooltip')));
-      if (currentOppPokemon !== null) {
-        if (
-          currentOwnPokemon !== lastOwnPokemon ||
-          currentOppPokemon !== lastOppPokemon ||
-          currentWeatherStatus !== lastWeatherStatus ||
-          currentTerrainStatus !== lastTerrainStatus
-        ) {
-          lastOwnPokemon = currentOwnPokemon;
-          lastOppPokemon = currentOppPokemon;
-          lastWeatherStatus = currentWeatherStatus;
-          lastTerrainStatus = currentTerrainStatus;
-
-          const calcs =
-            '<iframe class="calcIframe" style="width: 100%; height: 30em;" sandbox="allow-same-origin allow-scripts allow-forms" src="https://fulllifegames.com/Tools/CalcApi/?ownPokemon=' +
-            currentOwnPokemon +
-            '&oppPokemon=' +
-            currentOppPokemon +
-            '&weather=' +
-            (currentWeatherStatus !== null ? (weatherMapping as any)[currentWeatherStatus] : null) +
-            '&terrain=' +
-            (currentTerrainStatus !== null ? (terrainMapping as any)[currentTerrainStatus] : null) +
-            '&tier=' +
-            currentTier +
-            '" />';
-          $(currentClickedBattleOptions)
-            .closest('.battle-log')
-            .children('.inner.message-log')
-            .append($('<div class="chat calc" style="white-space: pre-line">' + calcs + '</div>'));
+  async function checkAndSetHdImage(pokemonImage: HTMLImageElement, monsGif: string) {
+    const monsGifs = hdImagePaths.map((hdImagePath) => hdImagePath + monsGif);
+    for (const monsGif of monsGifs) {    
+      if (resultList.has(monsGif)) {
+        if (resultList.get(monsGif)?.exists) {
+          pokemonImage.src = monsGif;
+          break;
         }
+        continue;
       }
-    }
-    // check if new damagecalcs are needed
-    setTimeout(handleDamageCalcs, 500);
-  }
-
-  function triggerBattleHelp() {
-    console.log('BattleHelper triggered');
-
-    $("[name='close']").trigger('click');
-    $(currentClickedBattleOptions)
-      .closest('.battle-log')
-      .children('.inner.message-log')
-      .append(
-        $(
-          '<div class="chat battleHelperScouter" style="white-space: pre-line">Loading ReplayScouter ...</div>'
-        )
-      );
-    $(currentClickedBattleOptions)
-      .closest('.battle-log')
-      .children('.inner.message-log')
-      .append(
-        $(
-          '<div class="chat battleHelperDump" style="white-space: pre-line">Loading SmogonDump ...</div>'
-        )
-      );
-
-    const psRoom = $(currentClickedBattleOptions).closest('.ps-room');
-
-    const id = psRoom.attr('id') as string;
-    currentId = id;
-    runningHandlerId = currentId;
-
-    const oppName = $(psRoom.find('.battle div > div.rightbar > div > strong')[0]).html();
-
-    let tier = id.substr(0, id.lastIndexOf('-'));
-    tier = tier.substr(tier.lastIndexOf('-') + 1);
-
-    currentTier = tier;
-
-    const teamIcons = $(psRoom.find('.battle > div > div.rightbar > div > .teamicons'));
-    let teamPokemon = [] as string[];
-    teamIcons.each(function () {
-      $(this)
-        .find('span')
-        .each(function () {
-          let label = $(this).attr('aria-label');
-          if (label !== undefined) {
-            label = label.replace('(active)', '');
-            label = label.replace('(fainted)', '');
-
-            if (label.indexOf('(') !== -1) {
-              let tempLabel = label.substr(label.lastIndexOf('(') + 1);
-              tempLabel = tempLabel.substr(0, tempLabel.indexOf(')'));
-
-              if (isNaN(parseInt(tempLabel, 10))) {
-                label = tempLabel;
-              } else {
-                label = label.substr(0, label.indexOf('('));
-              }
-            }
-
-            teamPokemon.push(label.trim());
+      try {
+        const exists = await urlExists(monsGif);
+        if (exists !== null) {
+          if (exists) {
+            pokemonImage.src = monsGif;
+            resultList.set(monsGif, { exists: true });
+            break
+          } else {
+            resultList.set(monsGif, { exists: false });
           }
-        });
-    });
-
-    teamPokemon = teamPokemon.filter((entry) => entry !== 'Not revealed');
-    const team = teamPokemon.join(';');
-
-    $.ajax({
-      url: 'https://fulllifegames.com/Tools/ReplayScouterApi/',
-      data: {
-        name: oppName,
-        tier: tier,
-        mode: 'showdown',
-        team: team,
-      },
-    }).done(function (data) {
-      $('.battleHelperScouter').html(data);
-    });
-
-    $.ajax({
-      url: 'https://fulllifegames.com/Tools/SmogonDumpApi/',
-      data: {
-        list: tier + '.txt',
-        team: team,
-      },
-    }).done(function (data) {
-      $('.battleHelperDump').html(data);
-    });
-
-    running = true;
-
-    setTimeout(handleDamageCalcs, 100);
+        }
+      } catch {
+        resultList.set(monsGif, { exists: false });
+      }
+    }
   }
 
-  function triggerBattleHelpOff() {
-    running = false;
+  function logic() {
+    const pokemonImages = $('div.battle img:not(.pixelated)');
+
+    for (let i = 0; i < pokemonImages.length; i++) {
+      const pokemonImage = pokemonImages[i] as HTMLImageElement;
+      if (pokemonImage.src.indexOf('pkparaiso') === -1) {
+        if (pokemonImage.src.indexOf('sprites/ani/') !== -1) {
+          const monsGif = pokemonImage.src.substr(pokemonImage.src.indexOf("sprites/ani/") + "sprites/ani/".length);
+          checkAndSetHdImage(pokemonImage, monsGif);
+        } else if (pokemonImage.src.indexOf('sprites/ani-back/') !== -1) {
+          let monsGif = pokemonImage.src.substr(pokemonImage.src.indexOf("sprites/ani-back/") + "sprites/ani-back/".length);
+          monsGif = monsGif.replace('.gif', '-back.gif');
+          checkAndSetHdImage(pokemonImage, monsGif);
+        } else if (pokemonImage.src.indexOf('sprites/ani-shiny/') !== -1) {
+          let monsGif = pokemonImage.src.substr(pokemonImage.src.indexOf("sprites/ani-shiny/") + "sprites/ani-shiny/".length);
+          monsGif = monsGif.replace('.gif', '-s.gif');
+          checkAndSetHdImage(pokemonImage, monsGif);
+        } else if (pokemonImage.src.indexOf('sprites/ani-back-shiny/') !== -1) {
+          let monsGif = pokemonImage.src.substr(pokemonImage.src.indexOf("sprites/ani-back-shiny/") + "sprites/ani-back-shiny/".length);
+          monsGif = monsGif.replace('.gif', '-back-s.gif');
+          checkAndSetHdImage(pokemonImage, monsGif);
+        }
+      }
+    }
+
+    setTimeout(logic, 500);
   }
 
-  function addOption() {
-    const battleHelperButton = $('<button/>', {
-      text: 'Battle Helper',
-      click: triggerBattleHelp,
-      style: 'margin-left: 5px;',
-    });
-    const battleHelperButtonOff = $('<button/>', {
-      text: 'Battle Helper Off',
-      click: triggerBattleHelpOff,
-      style: 'margin-left: 5px;',
-    });
-    $('.ps-popup p:last-child').append(battleHelperButton);
-    $('.ps-popup p:last-child').append(battleHelperButtonOff);
-  }
+  setTimeout(logic, 500);
 
-  function triggerOptionAddition(this: HTMLElement) {
-    currentClickedBattleOptions = this;
-    setTimeout(addOption, 1);
-  }
-
-  function bootstrap() {
-    $("[name='openBattleOptions']").off('click').on('click', triggerOptionAddition);
-    setTimeout(bootstrap, 100);
-  }
-
-  bootstrap();
 })();
