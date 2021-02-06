@@ -20,7 +20,7 @@ Any issue or merge request is appreciated.
 
 ## Examples
 
-![Example](images/Example.png)
+![Example](images/UnfinishedExample.png)
 
 ## Feedback
 
