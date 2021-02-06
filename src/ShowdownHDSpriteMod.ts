@@ -17,16 +17,15 @@
 // ==/UserScript==
 
 (function () {
-
-  const corsAnyWhereImpl = "https://cors-anywhere-hd.herokuapp.com/";
+  const corsAnyWhereImpl = 'https://cors-anywhere-hd.herokuapp.com/';
 
   const currentQueriedList = new Map<string, { querying: boolean }>();
-  
+
   const resultList = new Map<string, { exists: boolean }>();
 
   const hdImagePaths = [
-    "https://www.pkparaiso.com/imagenes/espada_escudo/sprites/animados-gigante/",
-    "https://www.pkparaiso.com/imagenes/ultra_sol_ultra_luna/sprites/animados-sinbordes-gigante/",
+    'https://www.pkparaiso.com/imagenes/espada_escudo/sprites/animados-gigante/',
+    'https://www.pkparaiso.com/imagenes/ultra_sol_ultra_luna/sprites/animados-sinbordes-gigante/',
     // TODO: Find alternative HD image hosters (e.g. the FurretTurret Sprites)
   ];
 
@@ -54,18 +53,16 @@
 
   async function urlExists(url: string) {
     const corsFreeUrl = corsAnyWhereImpl + url;
-    const response = await makeRequest('HEAD', 
-      url.indexOf('file:///') === -1 ? corsFreeUrl : url
-    );
+    const response = await makeRequest('HEAD', url.indexOf('file:///') === -1 ? corsFreeUrl : url);
     if (response === null) {
-       return null;
+      return null;
     }
     return response.status !== 404;
   }
 
   async function checkAndSetHdImage(pokemonImage: HTMLImageElement, monsGif: string) {
     const monsGifs = hdImagePaths.map((hdImagePath) => hdImagePath + monsGif);
-    for (const monsGif of monsGifs) {    
+    for (const monsGif of monsGifs) {
       if (resultList.has(monsGif)) {
         if (resultList.get(monsGif)?.exists) {
           pokemonImage.src = monsGif;
@@ -79,7 +76,7 @@
           if (exists) {
             pokemonImage.src = monsGif;
             resultList.set(monsGif, { exists: true });
-            break
+            break;
           } else {
             resultList.set(monsGif, { exists: false });
           }
@@ -97,18 +94,26 @@
       const pokemonImage = pokemonImages[i] as HTMLImageElement;
       if (pokemonImage.src.indexOf('pkparaiso') === -1) {
         if (pokemonImage.src.indexOf('sprites/ani/') !== -1) {
-          const monsGif = pokemonImage.src.substr(pokemonImage.src.indexOf("sprites/ani/") + "sprites/ani/".length);
+          const monsGif = pokemonImage.src.substr(
+            pokemonImage.src.indexOf('sprites/ani/') + 'sprites/ani/'.length
+          );
           checkAndSetHdImage(pokemonImage, monsGif);
         } else if (pokemonImage.src.indexOf('sprites/ani-back/') !== -1) {
-          let monsGif = pokemonImage.src.substr(pokemonImage.src.indexOf("sprites/ani-back/") + "sprites/ani-back/".length);
+          let monsGif = pokemonImage.src.substr(
+            pokemonImage.src.indexOf('sprites/ani-back/') + 'sprites/ani-back/'.length
+          );
           monsGif = monsGif.replace('.gif', '-back.gif');
           checkAndSetHdImage(pokemonImage, monsGif);
         } else if (pokemonImage.src.indexOf('sprites/ani-shiny/') !== -1) {
-          let monsGif = pokemonImage.src.substr(pokemonImage.src.indexOf("sprites/ani-shiny/") + "sprites/ani-shiny/".length);
+          let monsGif = pokemonImage.src.substr(
+            pokemonImage.src.indexOf('sprites/ani-shiny/') + 'sprites/ani-shiny/'.length
+          );
           monsGif = monsGif.replace('.gif', '-s.gif');
           checkAndSetHdImage(pokemonImage, monsGif);
         } else if (pokemonImage.src.indexOf('sprites/ani-back-shiny/') !== -1) {
-          let monsGif = pokemonImage.src.substr(pokemonImage.src.indexOf("sprites/ani-back-shiny/") + "sprites/ani-back-shiny/".length);
+          let monsGif = pokemonImage.src.substr(
+            pokemonImage.src.indexOf('sprites/ani-back-shiny/') + 'sprites/ani-back-shiny/'.length
+          );
           monsGif = monsGif.replace('.gif', '-back-s.gif');
           checkAndSetHdImage(pokemonImage, monsGif);
         }
@@ -119,5 +124,4 @@
   }
 
   setTimeout(logic, 500);
-
 })();
