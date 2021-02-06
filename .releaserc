@@ -9,8 +9,8 @@
     ["@semantic-release/github", {
       "preset": "eslint",
       "assets": [
-        {"path": "dist/lib/battlehelper.js", "label": "BattleHelper"},
-        {"path": "dist/lib/battlehelper.js.map", "label": "BattleHelper Map"},
+        {"path": "dist/lib/ShowdownHDSpriteMod.js", "label": "ShowdownHDSpriteMod"},
+        {"path": "dist/lib/ShowdownHDSpriteMod.js.map", "label": "ShowdownHDSpriteMod Map"},
       ]
     }],
     ["@semantic-release/git", {
