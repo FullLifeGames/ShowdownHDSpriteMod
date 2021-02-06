@@ -7,6 +7,10 @@
 // @include      https://play.pokemonshowdown.com/
 // @include      http://play.pokemonshowdown.com/*
 // @include      https://play.pokemonshowdown.com/*
+// @include      http://replay.pokemonshowdown.com/
+// @include      https://replay.pokemonshowdown.com/
+// @include      http://replay.pokemonshowdown.com/*
+// @include      https://replay.pokemonshowdown.com/*
 // @include      http://*.psim.us/
 // @include      https://*.psim.us/
 // @include      http://*.psim.us/*
