@@ -5,6 +5,8 @@ This project is a mod that replaces the default Showdown Sprites with HD Sprites
 
 This project is in a **Beta** phase, so use it with the knowledge that it might break!
 
+Please **note**: This current state tries to get all images PkParaíso, since not all Pokémon are available as HD sprites, this also does not render every Pokémon in HD sprites.
+
 Any issue or merge request is appreciated.
 
 ## Installation
@@ -17,6 +19,8 @@ Any issue or merge request is appreciated.
 5) Paste the source into the script window and hit save
 
 ## Examples
+
+![Example](images/Example.png)
 
 ## Feedback
 
