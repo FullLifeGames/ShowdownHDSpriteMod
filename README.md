@@ -28,7 +28,7 @@ As previously said, any feedback or bug report is welcomed in the [Issues](https
 
 ## Including the Furret Turret Sprites
 
-Since the [Furret Turret sprites](https://www.mediafire.com/folder/9t19091d3l857/Pok%C3%A9mon_Sprites) are not to my knowledge hosted on a single file, for including them you need to host them on your local machine.
+Since the [Furret Turret sprites](https://www.mediafire.com/folder/9t19091d3l857/Pok%C3%A9mon_Sprites) are to my knowledge not hosted on a single page as individual files, for including them you need to host them on your local machine.
 
 After you download them from [here](https://www.mediafire.com/folder/9t19091d3l857/Pok%C3%A9mon_Sprites), follow these steps:
 
