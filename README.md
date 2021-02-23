@@ -25,3 +25,16 @@ Any issue or merge request is appreciated.
 ## Feedback
 
 As previously said, any feedback or bug report is welcomed in the [Issues](https://github.com/FullLifeGames/ShowdownHDSpriteMod/issues) tab.   
+
+## Including the Furret Turret Sprites
+
+Since the [Furret Turret sprites](https://www.mediafire.com/folder/9t19091d3l857/Pok%C3%A9mon_Sprites) are not to my knowledge hosted on a single file, for including them you need to host them on your local machine.
+
+After you download them from [here](https://www.mediafire.com/folder/9t19091d3l857/Pok%C3%A9mon_Sprites), follow these steps:
+
+* Unpack them to a common directory (check the mod for folder names)
+* Install [Node.js](https://nodejs.org/en/)
+* Navigate in a command shell to the common directory (e.g. Open CMD and navigate with `cd {folderPath}`)
+* Install the [http-server](https://www.npmjs.com/package/http-server) with: `npm install http-server -g`
+* Run the [http-server](https://www.npmjs.com/package/http-server) with: `http-server --cors`
+* Depending on your local configuration you might need to change some settings in the mod (like port etc.), but this should pretty much cover it
