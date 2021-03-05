@@ -84,7 +84,11 @@
   }
 
   async function checkAndSetHdImage(pokemonImage: HTMLImageElement, monsGif: string) {
-    const monsGifs = hdImagePaths.map((hdImagePath) => hdImagePath + monsGif.replace('-', ''));
+    const monsGifs = hdImagePaths.map(
+      (hdImagePath) =>
+        hdImagePath +
+        (hdImagePath.indexOf(furretTurretPath) !== -1 ? monsGif.replace('-', '') : monsGif)
+    );
     for (const monsGif of monsGifs) {
       if (resultList.has(monsGif)) {
         if (resultList.get(monsGif)?.exists) {
