@@ -15,7 +15,7 @@
 // @include      https://*.psim.us/
 // @include      http://*.psim.us/*
 // @include      https://*.psim.us/*
-// @version      0.0.3
+// @version      1.0.2
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
@@ -84,11 +84,15 @@
   }
 
   async function checkAndSetHdImage(pokemonImage: HTMLImageElement, monsGif: string) {
-    const monsGifs = hdImagePaths.map((hdImagePath) => hdImagePath + monsGif);
+    const monsGifs = hdImagePaths.map((hdImagePath) => hdImagePath + monsGif.replace('-', ''));
     for (const monsGif of monsGifs) {
       if (resultList.has(monsGif)) {
         if (resultList.get(monsGif)?.exists) {
-          if (pokemonImage.src !== monsGif) {
+          if (
+            pokemonImage.src !== monsGif &&
+            (pokemonImage.src.indexOf('pokemonshowdown') !== -1 ||
+              pokemonImage.src.indexOf('psim.us') !== -1)
+          ) {
             pokemonImage.src = monsGif;
           }
           break;
@@ -99,7 +103,11 @@
         const exists = await urlExists(monsGif);
         if (exists !== null) {
           if (exists) {
-            if (pokemonImage.src !== monsGif) {
+            if (
+              pokemonImage.src !== monsGif &&
+              (pokemonImage.src.indexOf('pokemonshowdown') !== -1 ||
+                pokemonImage.src.indexOf('psim.us') !== -1)
+            ) {
               pokemonImage.src = monsGif;
             }
             resultList.set(monsGif, { exists: true });
