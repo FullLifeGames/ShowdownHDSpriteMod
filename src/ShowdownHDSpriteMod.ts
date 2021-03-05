@@ -15,7 +15,7 @@
 // @include      https://*.psim.us/
 // @include      http://*.psim.us/*
 // @include      https://*.psim.us/*
-// @version      0.0.2
+// @version      0.0.3
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
@@ -88,7 +88,9 @@
     for (const monsGif of monsGifs) {
       if (resultList.has(monsGif)) {
         if (resultList.get(monsGif)?.exists) {
-          pokemonImage.src = monsGif;
+          if (pokemonImage.src !== monsGif) {
+            pokemonImage.src = monsGif;
+          }
           break;
         }
         continue;
@@ -97,7 +99,9 @@
         const exists = await urlExists(monsGif);
         if (exists !== null) {
           if (exists) {
-            pokemonImage.src = monsGif;
+            if (pokemonImage.src !== monsGif) {
+              pokemonImage.src = monsGif;
+            }
             resultList.set(monsGif, { exists: true });
             break;
           } else {
@@ -115,7 +119,7 @@
 
     for (let i = 0; i < pokemonImages.length; i++) {
       const pokemonImage = pokemonImages[i] as HTMLImageElement;
-      if (pokemonImage.src.indexOf('pkparaiso') === -1) {
+      if (!hdImagePaths.some((hdImagePath) => pokemonImage.src.indexOf(hdImagePath) !== -1)) {
         if (pokemonImage.src.indexOf('sprites/ani/') !== -1) {
           const monsGif = pokemonImage.src.substr(
             pokemonImage.src.indexOf('sprites/ani/') + 'sprites/ani/'.length
