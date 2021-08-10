@@ -137,6 +137,8 @@
                 pokemonImage.src.indexOf('psim.us') !== -1)
             ) {
               pokemonImage.src = fullMonsGif;
+              pokemonImage.style.objectFit = 'cover';
+              pokemonImage.style.height = 'auto';
             }
             resultList.set(fullMonsGif, { exists: true });
             break;
