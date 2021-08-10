@@ -15,7 +15,7 @@
 // @include      https://*.psim.us/
 // @include      http://*.psim.us/*
 // @include      https://*.psim.us/*
-// @version      1.0.2
+// @version      1.0.3
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
@@ -31,6 +31,7 @@
   const furretTurretPath = 'http://localhost:8080/';
 
   const hdImagePaths = [
+    furretTurretPath + 'HDFront&BackSprites/',
     furretTurretPath + 'FurretTurret_REGULAR_HD_SPRITE_GEN1/',
     furretTurretPath + 'Gen_2/',
     furretTurretPath + 'Gen_3/',
@@ -72,15 +73,27 @@
   }
 
   async function urlExists(url: string) {
-    const corsFreeUrl = corsAnyWhereImpl + url;
-    const response = await makeRequest(
-      'HEAD',
-      url.indexOf('file:///') === -1 && url.indexOf('localhost') === -1 ? corsFreeUrl : url
-    );
-    if (response === null) {
+    try {
+      const corsFreeUrl = corsAnyWhereImpl + url;
+      const response = await makeRequest(
+        'HEAD',
+        url.indexOf('file:///') === -1 && url.indexOf('localhost') === -1 ? corsFreeUrl : url
+      );
+      if (response === null) {
+        return null;
+      }
+      return response.status !== 404;
+    } catch {
       return null;
     }
-    return response.status !== 404;
+  }
+
+  function getMonsName(monsGif: string) {
+    let monsName = monsGif.substring(0, monsGif.lastIndexOf('.'));
+    if (monsName.indexOf('-') !== -1) {
+      monsName = monsName.substring(0, monsName.indexOf('-'));
+    }
+    return [monsName, monsGif.substring(monsName.length)];
   }
 
   async function checkAndSetHdImage(pokemonImage: HTMLImageElement, monsGif: string) {
@@ -89,39 +102,50 @@
         hdImagePath +
         (hdImagePath.indexOf(furretTurretPath) !== -1 ? monsGif.replace('-', '') : monsGif)
     );
-    for (const monsGif of monsGifs) {
-      if (resultList.has(monsGif)) {
-        if (resultList.get(monsGif)?.exists) {
+    for (let fullMonsGif of monsGifs) {
+      if (resultList.has(fullMonsGif)) {
+        if (resultList.get(fullMonsGif)?.exists) {
           if (
-            pokemonImage.src !== monsGif &&
+            pokemonImage.src !== fullMonsGif &&
             (pokemonImage.src.indexOf('pokemonshowdown') !== -1 ||
               pokemonImage.src.indexOf('psim.us') !== -1)
           ) {
-            pokemonImage.src = monsGif;
+            pokemonImage.src = fullMonsGif;
           }
           break;
         }
         continue;
       }
       try {
-        const exists = await urlExists(monsGif);
+        let exists = await urlExists(fullMonsGif);
+        if (exists === null || !exists) {
+          const [monsName, extension] = getMonsName(monsGif);
+          const pokeDexNumber = window.exports.BattlePokedex[monsName].num;
+          const hostUrl = fullMonsGif.substring(0, fullMonsGif.lastIndexOf('/') + 1);
+          const oldFullMonsGif = fullMonsGif;
+          fullMonsGif = hostUrl + pokeDexNumber + extension;
+          exists = await urlExists(fullMonsGif);
+          if (exists === null || !exists) {
+            resultList.set(oldFullMonsGif, { exists: false });
+          }
+        }
         if (exists !== null) {
           if (exists) {
             if (
-              pokemonImage.src !== monsGif &&
+              pokemonImage.src !== fullMonsGif &&
               (pokemonImage.src.indexOf('pokemonshowdown') !== -1 ||
                 pokemonImage.src.indexOf('psim.us') !== -1)
             ) {
-              pokemonImage.src = monsGif;
+              pokemonImage.src = fullMonsGif;
             }
-            resultList.set(monsGif, { exists: true });
+            resultList.set(fullMonsGif, { exists: true });
             break;
           } else {
-            resultList.set(monsGif, { exists: false });
+            resultList.set(fullMonsGif, { exists: false });
           }
         }
       } catch {
-        resultList.set(monsGif, { exists: false });
+        resultList.set(fullMonsGif, { exists: false });
       }
     }
   }

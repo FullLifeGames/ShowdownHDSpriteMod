@@ -39,3 +39,8 @@ After you download them from [here](https://www.mediafire.com/folder/9t19091d3l8
 * Run the [http-server](https://www.npmjs.com/package/http-server) with: `http-server --cors`
 * Depending on your local configuration you might need to change some settings in the mod (like port etc.), but this should pretty much cover it
 * Optional: For a better experience, you have to remove the `_` some images contain in their name, so that they can be found. You can do this with the `for f in *; do mv "$f" "${f//_/}"; done` command in the respective folders. Be however cautios and doublecheck, that this is what you want and that you are executing this in the correct folder!
+
+## Additional Front- and Back-Sprite Resources
+
+For additional Front- and Back-Sprites, you can check out [this](https://forums.pokemmo.eu/index.php?%2Ftopic%2F84254-mod-hd-battle-sprites%2F) resource and provide them as previously described.
+* Optional: For a better experience, you should remove the `-n` and `-m` from the images. You can do this with the `for f in *; do mv "$f" "${f//-n/}"; done` and `for f in *; do mv "$f" "${f//-m/}"; done` command in the respective folders. Be however cautios and doublecheck, that this is what you want and that you are executing this in the correct folder!
