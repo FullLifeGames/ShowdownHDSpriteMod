@@ -1,4 +1,5 @@
 # Showdown HD Sprite Mod
+
 [![Build Status](https://travis-ci.org/FullLifeGames/ShowdownHDSpriteMod.svg?branch=master)](https://travis-ci.org/FullLifeGames/ShowdownHDSpriteMod)
 
 This project is a mod that replaces the default Showdown Sprites with HD Sprites from PkParaíso.
@@ -43,4 +44,6 @@ After you download them from [here](https://www.mediafire.com/folder/9t19091d3l8
 ## Additional Front- and Back-Sprite Resources
 
 For additional Front- and Back-Sprites, you can check out [this](https://forums.pokemmo.eu/index.php?%2Ftopic%2F84254-mod-hd-battle-sprites%2F) resource and provide them as previously described.
+
 * Optional: For a better experience, you should remove the `-n` and `-m` from the images. You can do this with the `for f in *; do mv "$f" "${f//-n/}"; done` and `for f in *; do mv "$f" "${f//-m/}"; done` command in the respective folders. Be however cautios and doublecheck, that this is what you want and that you are executing this in the correct folder!
+* You should also crop these gifs to enhance their potential, since they have a lot of white space! You can do this, using this [gist](https://gist.github.com/FullLifeGames/b544f1661c6accd8c17f1f031a703b4f)!

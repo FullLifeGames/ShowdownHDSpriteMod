@@ -15,7 +15,7 @@
 // @include      https://*.psim.us/
 // @include      http://*.psim.us/*
 // @include      https://*.psim.us/*
-// @version      1.0.3
+// @version      1.0.4
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
@@ -31,11 +31,13 @@
   const furretTurretPath = 'http://localhost:8080/';
 
   const hdImagePaths = [
-    furretTurretPath + 'HDFront&BackSprites/',
+    furretTurretPath + 'HDFront&BackSpritesCropped/',
     furretTurretPath + 'FurretTurret_REGULAR_HD_SPRITE_GEN1/',
     furretTurretPath + 'Gen_2/',
     furretTurretPath + 'Gen_3/',
     furretTurretPath + 'Gen_4/',
+    'https://www.pkparaiso.com/imagenes/espada_escudo/sprites/animados-gigante/',
+    'https://www.pkparaiso.com/imagenes/ultra_sol_ultra_luna/sprites/animados-sinbordes-gigante/',
     furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN1/',
     furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN2/',
     furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN3/',
@@ -45,8 +47,6 @@
     furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN7/',
     furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_ULTRA/',
     furretTurretPath + 'Gen_8_Shiny/',
-    'https://www.pkparaiso.com/imagenes/espada_escudo/sprites/animados-gigante/',
-    'https://www.pkparaiso.com/imagenes/ultra_sol_ultra_luna/sprites/animados-sinbordes-gigante/',
     // TODO: Find alternative HD image hosters (e.g. the FurretTurret Sprites)
   ];
 
@@ -96,6 +96,17 @@
     return [monsName, monsGif.substring(monsName.length)];
   }
 
+  function setHdImage(pokemonImage: HTMLImageElement, fullMonsGif: string) {
+    if (
+      pokemonImage.src !== fullMonsGif &&
+      (pokemonImage.src.indexOf('pokemonshowdown') !== -1 ||
+        pokemonImage.src.indexOf('psim.us') !== -1)
+    ) {
+      pokemonImage.src = fullMonsGif;
+      pokemonImage.style.objectFit = 'contain';
+    }
+  }
+
   async function checkAndSetHdImage(pokemonImage: HTMLImageElement, monsGif: string) {
     const monsGifs = hdImagePaths.map(
       (hdImagePath) =>
@@ -105,13 +116,7 @@
     for (let fullMonsGif of monsGifs) {
       if (resultList.has(fullMonsGif)) {
         if (resultList.get(fullMonsGif)?.exists) {
-          if (
-            pokemonImage.src !== fullMonsGif &&
-            (pokemonImage.src.indexOf('pokemonshowdown') !== -1 ||
-              pokemonImage.src.indexOf('psim.us') !== -1)
-          ) {
-            pokemonImage.src = fullMonsGif;
-          }
+          setHdImage(pokemonImage, fullMonsGif);
           break;
         }
         continue;
@@ -131,15 +136,7 @@
         }
         if (exists !== null) {
           if (exists) {
-            if (
-              pokemonImage.src !== fullMonsGif &&
-              (pokemonImage.src.indexOf('pokemonshowdown') !== -1 ||
-                pokemonImage.src.indexOf('psim.us') !== -1)
-            ) {
-              pokemonImage.src = fullMonsGif;
-              pokemonImage.style.objectFit = 'cover';
-              pokemonImage.style.height = 'auto';
-            }
+            setHdImage(pokemonImage, fullMonsGif);
             resultList.set(fullMonsGif, { exists: true });
             break;
           } else {
@@ -168,18 +165,21 @@
             pokemonImage.src.indexOf('sprites/ani-back/') + 'sprites/ani-back/'.length
           );
           monsGif = monsGif.replace('.gif', '-back.gif');
+          monsGif = monsGif.replace('-f', '');
           checkAndSetHdImage(pokemonImage, monsGif);
         } else if (pokemonImage.src.indexOf('sprites/ani-shiny/') !== -1) {
           let monsGif = pokemonImage.src.substr(
             pokemonImage.src.indexOf('sprites/ani-shiny/') + 'sprites/ani-shiny/'.length
           );
           monsGif = monsGif.replace('.gif', '-s.gif');
+          monsGif = monsGif.replace('-f', '');
           checkAndSetHdImage(pokemonImage, monsGif);
         } else if (pokemonImage.src.indexOf('sprites/ani-back-shiny/') !== -1) {
           let monsGif = pokemonImage.src.substr(
             pokemonImage.src.indexOf('sprites/ani-back-shiny/') + 'sprites/ani-back-shiny/'.length
           );
           monsGif = monsGif.replace('.gif', '-back-s.gif');
+          monsGif = monsGif.replace('-f', '');
           checkAndSetHdImage(pokemonImage, monsGif);
         }
       }
