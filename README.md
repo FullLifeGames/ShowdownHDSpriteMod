@@ -23,9 +23,11 @@ Any issue or merge request is appreciated.
 
 ![Example](images/UnfinishedExample.png)
 
+See a gif version of it [here](images/UnfinishedExample.gif)!
+
 ## Feedback
 
-As previously said, any feedback or bug report is welcomed in the [Issues](https://github.com/FullLifeGames/ShowdownHDSpriteMod/issues) tab.   
+As previously said, any feedback or bug report is welcomed in the [Issues](https://github.com/FullLifeGames/ShowdownHDSpriteMod/issues) tab.
 
 ## Including the Furret Turret Sprites
 

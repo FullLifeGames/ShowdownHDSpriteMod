@@ -1,6 +1,6 @@
 {
   "name": "ShowdownHDSpriteMod",
-  "version": "0.0.1",
+  "version": "1.2.0",
   "description": "This project is a mod that replaces the default Showdown Sprites with HD Sprites from PkParaíso.",
   "keywords": [],
   "main": "dist/ShowdownHDSpriteMod.umd.js",
@@ -19,7 +19,7 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint --fix src/**/*.ts",
     "prebuild": "rimraf dist",
     "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
     "start": "rollup -c rollup.config.ts -w",

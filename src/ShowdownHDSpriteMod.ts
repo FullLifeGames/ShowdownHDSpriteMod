@@ -15,7 +15,7 @@
 // @include      https://*.psim.us/
 // @include      http://*.psim.us/*
 // @include      https://*.psim.us/*
-// @version      1.0.4
+// @version      1.2.0
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
@@ -26,6 +26,8 @@
   const currentQueriedList = new Map<string, { querying: boolean }>();
 
   const resultList = new Map<string, { exists: boolean }>();
+
+  const animatedSmallSprites = true;
 
   // Check the README for usage
   const furretTurretPath = 'http://localhost:8080/';
@@ -96,7 +98,7 @@
     return [monsName, monsGif.substring(monsName.length)];
   }
 
-  function setHdImage(pokemonImage: HTMLImageElement, fullMonsGif: string) {
+  function setHdImageSrc(pokemonImage: HTMLImageElement, fullMonsGif: string) {
     if (
       pokemonImage.src !== fullMonsGif &&
       (pokemonImage.src.indexOf('pokemonshowdown') !== -1 ||
@@ -107,7 +109,24 @@
     }
   }
 
-  async function checkAndSetHdImage(pokemonImage: HTMLImageElement, monsGif: string) {
+  function setHdImageStyle(miniPokemonImage: HTMLSpanElement, fullMonsGif: string) {
+    if (
+      miniPokemonImage.style.background !== `url(${fullMonsGif})` &&
+      (miniPokemonImage.style.background.indexOf('pokemonshowdown') !== -1 ||
+        miniPokemonImage.style.background.indexOf('psim.us') !== -1)
+    ) {
+      miniPokemonImage.style.background = `url(${fullMonsGif})`;
+      miniPokemonImage.style.backgroundSize = 'contain';
+      miniPokemonImage.style.backgroundPosition = 'center';
+      miniPokemonImage.style.backgroundRepeat = 'no-repeat';
+    }
+  }
+
+  async function checkAndSetHdImage<HTMLElementImpl>(
+    pokemonImage: HTMLElementImpl,
+    monsGif: string,
+    setImage: (pokemonImage: HTMLElementImpl, fullMonsGif: string) => void
+  ) {
     const monsGifs = hdImagePaths.map(
       (hdImagePath) =>
         hdImagePath +
@@ -116,7 +135,7 @@
     for (let fullMonsGif of monsGifs) {
       if (resultList.has(fullMonsGif)) {
         if (resultList.get(fullMonsGif)?.exists) {
-          setHdImage(pokemonImage, fullMonsGif);
+          setImage(pokemonImage, fullMonsGif);
           break;
         }
         continue;
@@ -136,7 +155,7 @@
         }
         if (exists !== null) {
           if (exists) {
-            setHdImage(pokemonImage, fullMonsGif);
+            setImage(pokemonImage, fullMonsGif);
             resultList.set(fullMonsGif, { exists: true });
             break;
           } else {
@@ -156,31 +175,78 @@
       const pokemonImage = pokemonImages[i] as HTMLImageElement;
       if (!hdImagePaths.some((hdImagePath) => pokemonImage.src.indexOf(hdImagePath) !== -1)) {
         if (pokemonImage.src.indexOf('sprites/ani/') !== -1) {
-          const monsGif = pokemonImage.src.substr(
+          let monsGif = pokemonImage.src.substr(
             pokemonImage.src.indexOf('sprites/ani/') + 'sprites/ani/'.length
           );
-          checkAndSetHdImage(pokemonImage, monsGif);
+          monsGif = monsGif.replace('-f', '');
+          checkAndSetHdImage(pokemonImage, monsGif, setHdImageSrc);
         } else if (pokemonImage.src.indexOf('sprites/ani-back/') !== -1) {
           let monsGif = pokemonImage.src.substr(
             pokemonImage.src.indexOf('sprites/ani-back/') + 'sprites/ani-back/'.length
           );
           monsGif = monsGif.replace('.gif', '-back.gif');
           monsGif = monsGif.replace('-f', '');
-          checkAndSetHdImage(pokemonImage, monsGif);
+          checkAndSetHdImage(pokemonImage, monsGif, setHdImageSrc);
         } else if (pokemonImage.src.indexOf('sprites/ani-shiny/') !== -1) {
           let monsGif = pokemonImage.src.substr(
             pokemonImage.src.indexOf('sprites/ani-shiny/') + 'sprites/ani-shiny/'.length
           );
           monsGif = monsGif.replace('.gif', '-s.gif');
           monsGif = monsGif.replace('-f', '');
-          checkAndSetHdImage(pokemonImage, monsGif);
+          checkAndSetHdImage(pokemonImage, monsGif, setHdImageSrc);
         } else if (pokemonImage.src.indexOf('sprites/ani-back-shiny/') !== -1) {
           let monsGif = pokemonImage.src.substr(
             pokemonImage.src.indexOf('sprites/ani-back-shiny/') + 'sprites/ani-back-shiny/'.length
           );
           monsGif = monsGif.replace('.gif', '-back-s.gif');
           monsGif = monsGif.replace('-f', '');
-          checkAndSetHdImage(pokemonImage, monsGif);
+          checkAndSetHdImage(pokemonImage, monsGif, setHdImageSrc);
+        }
+      }
+    }
+
+    if (animatedSmallSprites) {
+      const miniPokemonImages = $('.picon.has-tooltip');
+      for (let i = 0; i < miniPokemonImages.length; i++) {
+        const miniPokemonImage = miniPokemonImages[i] as HTMLSpanElement;
+        if (
+          !hdImagePaths.some(
+            (hdImagePath) => miniPokemonImage.style.background.indexOf(hdImagePath) !== -1
+          )
+        ) {
+          let pokemonName = miniPokemonImage.attributes.getNamedItem('aria-label')?.value;
+
+          if (pokemonName !== undefined) {
+            pokemonName = pokemonName.toLowerCase();
+
+            pokemonName = pokemonName.replace(' (active)', '');
+            pokemonName = pokemonName.replace(' (fainted)', '');
+            pokemonName = pokemonName.replace(' (tox)', '');
+            pokemonName = pokemonName.replace(' (brn)', '');
+            pokemonName = pokemonName.replace(' (par)', '');
+            pokemonName = pokemonName.replace(' (frz)', '');
+
+            if (pokemonName.indexOf('%') !== -1) {
+              for (const seperation of pokemonName.split('(')) {
+                if (seperation.indexOf('%') !== -1) {
+                  pokemonName = pokemonName.replace(
+                    '(' + seperation.substr(0, seperation.indexOf(')') + 1),
+                    ''
+                  );
+                  break;
+                }
+              }
+            }
+
+            if (pokemonName.indexOf('(') !== -1) {
+              pokemonName = pokemonName.substr(pokemonName.indexOf('(') + 1);
+              pokemonName = pokemonName.substr(0, pokemonName.indexOf(')'));
+            }
+
+            pokemonName = pokemonName.trim();
+
+            checkAndSetHdImage(miniPokemonImage, `${pokemonName}.gif`, setHdImageStyle);
+          }
         }
       }
     }
