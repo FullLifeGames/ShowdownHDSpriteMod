@@ -1,10 +1,10 @@
 {
-  "name": "ShowdownHDSpriteMod",
-  "version": "1.2.0",
+  "name": "showdownhdspritemod",
+  "version": "1.2.1",
   "description": "This project is a mod that replaces the default Showdown Sprites with HD Sprites from PkParaíso.",
   "keywords": [],
   "main": "dist/ShowdownHDSpriteMod.umd.js",
-  "module": "dist/ShowdownHDSpriteMod.es5.js",
+  "module": "dist/ShowdownHDSpriteMod.js",
   "typings": "dist/types/ShowdownHDSpriteMod.d.ts",
   "files": [
     "dist"

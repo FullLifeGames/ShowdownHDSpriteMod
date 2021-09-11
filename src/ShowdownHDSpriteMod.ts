@@ -15,7 +15,7 @@
 // @include      https://*.psim.us/
 // @include      http://*.psim.us/*
 // @include      https://*.psim.us/*
-// @version      1.2.0
+// @version      1.2.1
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
@@ -30,25 +30,33 @@
   const animatedSmallSprites = true;
 
   // Check the README for usage
-  const furretTurretPath = 'http://localhost:8080/';
+  const localhostPath = 'http://localhost:8080/';
+
+  const furretTurretRegular = [
+    localhostPath + 'FurretTurret_REGULAR_HD_SPRITE_GEN1/',
+    localhostPath + 'Gen_2/',
+    localhostPath + 'Gen_3/',
+    localhostPath + 'Gen_4/',
+  ];
+
+  const furretTurretShinies = [
+    localhostPath + 'FurretTurret_SHINY_HD_SPRITE_GEN1/',
+    localhostPath + 'FurretTurret_SHINY_HD_SPRITE_GEN2/',
+    localhostPath + 'FurretTurret_SHINY_HD_SPRITE_GEN3/',
+    localhostPath + 'FurretTurret_SHINY_HD_SPRITE_GEN4/',
+    localhostPath + 'FurretTurret_SHINY_HD_SPRITE_GEN5/',
+    localhostPath + 'FurretTurret_SHINY_HD_SPRITE_GEN6/',
+    localhostPath + 'FurretTurret_SHINY_HD_SPRITE_GEN7/',
+    localhostPath + 'FurretTurret_SHINY_HD_SPRITE_ULTRA/',
+    localhostPath + 'Gen_8_Shiny/',
+  ];
 
   const hdImagePaths = [
-    furretTurretPath + 'HDFront&BackSpritesCropped/',
-    furretTurretPath + 'FurretTurret_REGULAR_HD_SPRITE_GEN1/',
-    furretTurretPath + 'Gen_2/',
-    furretTurretPath + 'Gen_3/',
-    furretTurretPath + 'Gen_4/',
+    localhostPath + 'HDFront&BackSpritesCropped/',
+    ...furretTurretRegular,
     'https://www.pkparaiso.com/imagenes/espada_escudo/sprites/animados-gigante/',
     'https://www.pkparaiso.com/imagenes/ultra_sol_ultra_luna/sprites/animados-sinbordes-gigante/',
-    furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN1/',
-    furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN2/',
-    furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN3/',
-    furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN4/',
-    furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN5/',
-    furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN6/',
-    furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_GEN7/',
-    furretTurretPath + 'FurretTurret_SHINY_HD_SPRITE_ULTRA/',
-    furretTurretPath + 'Gen_8_Shiny/',
+    ...furretTurretShinies,
     // TODO: Find alternative HD image hosters (e.g. the FurretTurret Sprites)
   ];
 
@@ -74,7 +82,7 @@
     });
   }
 
-  async function urlExists(url: string) {
+  async function urlExists(url: string): Promise<boolean | null> {
     try {
       const corsFreeUrl = corsAnyWhereImpl + url;
       const response = await makeRequest(
@@ -86,7 +94,7 @@
       }
       return response.status !== 404;
     } catch {
-      return null;
+      return false;
     }
   }
 
@@ -119,6 +127,7 @@
       miniPokemonImage.style.backgroundSize = 'contain';
       miniPokemonImage.style.backgroundPosition = 'center';
       miniPokemonImage.style.backgroundRepeat = 'no-repeat';
+      miniPokemonImage.style.imageRendering = 'auto';
     }
   }
 
@@ -130,7 +139,10 @@
     const monsGifs = hdImagePaths.map(
       (hdImagePath) =>
         hdImagePath +
-        (hdImagePath.indexOf(furretTurretPath) !== -1 ? monsGif.replace('-', '') : monsGif)
+        (furretTurretRegular.some((entry) => hdImagePath.indexOf(entry) !== -1) ||
+        furretTurretShinies.some((entry) => hdImagePath.indexOf(entry) !== -1)
+          ? monsGif.replace('-', '')
+          : monsGif)
     );
     for (let fullMonsGif of monsGifs) {
       if (resultList.has(fullMonsGif)) {
@@ -142,25 +154,26 @@
       }
       try {
         let exists = await urlExists(fullMonsGif);
-        if (exists === null || !exists) {
+        if (exists === null) {
+          continue;
+        }
+        if (!exists) {
           const [monsName, extension] = getMonsName(monsGif);
           const pokeDexNumber = window.exports.BattlePokedex[monsName].num;
           const hostUrl = fullMonsGif.substring(0, fullMonsGif.lastIndexOf('/') + 1);
           const oldFullMonsGif = fullMonsGif;
           fullMonsGif = hostUrl + pokeDexNumber + extension;
           exists = await urlExists(fullMonsGif);
-          if (exists === null || !exists) {
+          if (!exists) {
             resultList.set(oldFullMonsGif, { exists: false });
           }
         }
-        if (exists !== null) {
-          if (exists) {
-            setImage(pokemonImage, fullMonsGif);
-            resultList.set(fullMonsGif, { exists: true });
-            break;
-          } else {
-            resultList.set(fullMonsGif, { exists: false });
-          }
+        if (exists) {
+          setImage(pokemonImage, fullMonsGif);
+          resultList.set(fullMonsGif, { exists: true });
+          break;
+        } else {
+          resultList.set(fullMonsGif, { exists: false });
         }
       } catch {
         resultList.set(fullMonsGif, { exists: false });
@@ -244,6 +257,7 @@
             }
 
             pokemonName = pokemonName.trim();
+            pokemonName = pokemonName.replace(' ', '');
 
             checkAndSetHdImage(miniPokemonImage, `${pokemonName}.gif`, setHdImageStyle);
           }

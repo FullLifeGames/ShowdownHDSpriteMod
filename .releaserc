@@ -4,13 +4,13 @@
       "preset": "eslint"
     }],
     ["@semantic-release/release-notes-generator", {
-      "preset": "eslint",
+      "preset": "eslint"
     }],
     ["@semantic-release/github", {
       "preset": "eslint",
       "assets": [
         {"path": "dist/lib/ShowdownHDSpriteMod.js", "label": "ShowdownHDSpriteMod"},
-        {"path": "dist/lib/ShowdownHDSpriteMod.js.map", "label": "ShowdownHDSpriteMod Map"},
+        {"path": "dist/lib/ShowdownHDSpriteMod.js.map", "label": "ShowdownHDSpriteMod Map"}
       ]
     }],
     ["@semantic-release/git", {
